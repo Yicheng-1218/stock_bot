@@ -1,5 +1,6 @@
 import os
-from web_crawler import *
+from re import X
+from web_crawler import StockInfo
 from flask import Flask, request, abort
 from linebot import (
     LineBotApi, WebhookHandler
@@ -45,6 +46,21 @@ def home():
     return 'linebot on working'
 
 
+# 訊息參照表
+msg_ref = {
+    'command_list': StockInfo.get_commands(),
+    'get_list': lambda uid: StockInfo(uid).get_list(),
+    'get_list_report': TextSendMessage('開發中')
+}
+
+
+# 指令參照表
+command_ref = {
+    '/a': lambda uid, sid: StockInfo(uid).add_code_to_list(sid),
+    '/d': lambda uid, sid: StockInfo(uid).update_list(sid)
+}
+
+
 # Text message handler
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -52,9 +68,17 @@ def handle_message(event):
     print(str(event))
     # 取得使用者說的文字
     user_msg = event.message.text
-    stock_report = get_stock_info(user_msg)
-    # 準備要回傳的文字訊息
-    reply = stock_report
+    uid = event.source.userId
+    if user_msg in msg_ref:
+        reply = msg_ref[user_msg](uid)
+    elif command_ref in user_msg:
+        c = user_msg.split()
+        reply = command_ref[c[0]](uid, c[1])
+    else:
+        stock_report = StockInfo.get_stock_info(user_msg)
+        # 準備要回傳的文字訊息
+        reply = stock_report
+
     line_bot_api.reply_message(
         event.reply_token,
         reply)
