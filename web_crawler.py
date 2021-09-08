@@ -409,11 +409,11 @@ class StockInfo:
 
     def pop_item(self, sid, uid):
         try:
-            db_read: dict = self.db.read('stock', uid)[
-                'data']['stocks']
-            new_list = db_read.pop(sid)
+            db_read = self.db.read('stock', uid)
+            stocks: dict = db_read['data']['stocks']
+            stocks.pop(sid)
             db_update = self.db.update(
-                'stock', {'stocks': new_list}, uid)
+                'stock', {'stocks': stocks}, uid)
             reply = TextSendMessage(db_update['msg'])
         except:
             reply = TextSendMessage('清單更新失敗')
