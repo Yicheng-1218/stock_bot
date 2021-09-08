@@ -90,6 +90,6 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     dev_host = "127.0.0.1"
     heroku_host = "0.0.0.0"
-    host = dev_host
+    host = heroku_host
     print(f"[Application running on {host}:{port}]")
     app.run(host=host, port=port, debug=True)
