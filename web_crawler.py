@@ -311,18 +311,20 @@ class StockInfo:
 
     def get_list(self):
         try:
-            db_read = self.db.read('stock', self.uid)['data']['stocks']
+            db_read = self.db.read('stock', self.uid)
+            print(db_read)
             if len(db_read['data']['stocks']) == 0 or db_read['msg'] == 'document not exists':
                 return TextSendMessage('尚未建立清單')
             contents = []
-            for key in db_read.keys():
+            stocks = db_read['data']['stocks']
+            for key in stocks.keys():
                 item = {
                     "type": "box",
                     "layout": "horizontal",
                     "contents": [
                         {
                             "type": "text",
-                            "text": f"名稱: {db_read[key]}",
+                            "text": f"名稱: {stocks[key]}",
                             "size": "md",
                             "color": "#555555"
                         },
