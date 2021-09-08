@@ -1,5 +1,4 @@
 import os
-from re import X
 from web_crawler import StockInfo
 from flask import Flask, request, abort
 from linebot import (
