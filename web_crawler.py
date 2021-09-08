@@ -388,7 +388,7 @@ class StockInfo:
             search_term = 'td[align=center]'
             result = html(search_term).text().split()
             db_read = self.db.read('stock', uid)
-            if db_read['msg'] == 'document not exists' or len(db_read['data']['stocks']) == 0:
+            if len(db_read['data']) == 0 or len(db_read['data']['stocks']) == 0 or db_read['msg'] == 'document not exists':
                 data = {'stocks':
                         {
                             sid: result[0].strip(sid)
