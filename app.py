@@ -48,16 +48,16 @@ def home():
 
 # 訊息參照表
 msg_ref = {
-    'command_list':  StockInfo.get_commands(),
-    'get_list': MyStock.get_list(),
-    'get_list_report': TextSendMessage('開發中')
+    'command_list': lambda uid: StockInfo.get_commands(),
+    'get_list': lambda uid: MyStock.get_list(),
+    'get_list_report': lambda uid: TextSendMessage('開發中')
 }
 
 
 # 指令參照表
 command_ref = {
-    '/a': lambda sid: MyStock.add_code_to_list(sid),
-    '/d': lambda sid: MyStock.update_list(sid)
+    '/a': lambda sid, uid: MyStock.add_code_to_list(sid, uid),
+    '/d': lambda sid, uid: MyStock.pop_item(sid, uid)
 }
 
 
@@ -68,13 +68,12 @@ def handle_message(event):
     print(str(event))
     # 取得使用者說的文字
     user_msg = event.message.text
-    uid = event.source.user_id
-    MyStock.uid = uid
+    my_uid = event.source.user_id
     if user_msg in msg_ref:
-        reply = msg_ref[user_msg]
+        reply = msg_ref[user_msg](my_uid)
     elif user_msg.split()[0] in command_ref:
         c = user_msg.split()
-        reply = command_ref[c[0]](c[1])
+        reply = command_ref[c[0]](c[1], my_uid)
     else:
         stock_report = StockInfo.get_stock_info(user_msg)
         # 準備要回傳的文字訊息

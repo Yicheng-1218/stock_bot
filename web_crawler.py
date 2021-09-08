@@ -9,7 +9,6 @@ class StockInfo:
 
     def __init__(self) -> None:
         self.db = MyDataBase()
-        self.uid = ''
 
     def __request_code(self, sid):
         # sid 個股代號
@@ -309,9 +308,9 @@ class StockInfo:
             }
         )
 
-    def get_list(self):
+    def get_list(self, uid):
         try:
-            db_read = self.db.read('stock', self.uid)
+            db_read = self.db.read('stock', uid)
             print(db_read)
             if len(db_read['data']['stocks']) == 0 or db_read['msg'] == 'document not exists':
                 return TextSendMessage('尚未建立清單')
@@ -337,11 +336,10 @@ class StockInfo:
                     ]
                 }
                 contents.append(item)
-            reply = FlexSendMessage(
-                alt_text="觀察清單...",
-                contents={
-                    "type": "bubble",
-                    "body": {
+
+            rep = {
+                "type": "bubble",
+                "body": {
                         "type": "box",
                         "layout": "vertical",
                         "contents": [
@@ -365,16 +363,17 @@ class StockInfo:
                                 "contents": contents
                             }
                         ]
-                    },
-                    "styles": {
-                        "footer": {
-                            "separator": True
-                        }
+                },
+                "styles": {
+                    "footer": {
+                        "separator": True
                     }
                 }
-            )
+            }
+            reply = FlexSendMessage(
+                alt_text="觀察清單...",
+                contents=rep)
         except Exception as err:
-            print(err)
             reply = TextSendMessage(f'{err}')
 
         return reply
@@ -382,19 +381,19 @@ class StockInfo:
     def get_list_info(self):
         pass
 
-    def add_code_to_list(self, sid):
+    def add_code_to_list(self, sid, uid):
         html = self.__request_code(sid)
         if html != -1:
             search_term = 'td[align=center]'
             result = html(search_term).text().split()
-            db_read = self.db.read('stock', self.uid)
+            db_read = self.db.read('stock', uid)
             if db_read['msg'] == 'document not exists' or len(db_read['data']['stocks']) == 0:
                 data = {'stocks':
                         {
                             sid: result[0].strip(sid)
                         }
                         }
-                db_create = self.db.create('stock', data, self.uid)
+                db_create = self.db.create('stock', data, uid)
             else:
                 if sid in db_read['data']['stocks']:
                     return TextSendMessage(f'代號已存在: {sid}')
@@ -402,24 +401,20 @@ class StockInfo:
                 new_data = db_read['data']['stocks']
                 new_data[sid] = result[0].strip(sid)
                 db_create = self.db.update(
-                    'stock', {'stocks': new_data}, self.uid)
+                    'stock', {'stocks': new_data}, uid)
             reply = TextSendMessage(db_create['msg'])
         else:
             reply = TextSendMessage(f'查無代號: {sid}')
         return reply
 
-    def pop_item(self, sid, update_data: dict = None):
+    def pop_item(self, sid, uid):
         try:
-            if update_data != None:
-                db_update = self.db.update(
-                    'stock', {'stocks': update_data}, self.uid)
-            else:
-                db_read: dict = self.db.read('stock', self.uid)[
-                    'data']['stocks']
-                new_list = db_read.pop(sid)
-                db_update = self.db.update(
-                    'stock', {'stocks': new_list}, self.uid)
-                reply = TextSendMessage(db_update['msg'])
+            db_read: dict = self.db.read('stock', uid)[
+                'data']['stocks']
+            new_list = db_read.pop(sid)
+            db_update = self.db.update(
+                'stock', {'stocks': new_list}, uid)
+            reply = TextSendMessage(db_update['msg'])
         except:
             reply = TextSendMessage('清單更新失敗')
 
@@ -504,5 +499,5 @@ class StockInfo:
 
 if __name__ == '__main__':
     s = StockInfo()
-    s.uid = 'Uc159e2de5a6e1a5f816b44e04e15527e'
-    print(s.get_list())
+    uid = 'Uc159e2de5a6e1a5f816b44e04e15527e'
+    print(s.get_list(uid))
