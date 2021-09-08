@@ -423,6 +423,31 @@ class StockInfo:
 
     @staticmethod
     def get_commands():
+        commands = {
+            '查詢報價': '代號',
+            '新增股票': '/a 代號',
+            '刪除股票': '/d 代號'
+        }
+        contents = []
+        for (key, item) in commands.items():
+            i = {
+                "type": "box",
+                "layout": "horizontal",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": f"{key}",
+                        "size": "md",
+                        "color": "#555555"
+                    },
+                    {
+                        "type": "text",
+                        "text": f"{item}",
+                        "align": "end"
+                    }
+                ]
+            }
+            contents.append(i)
         return FlexSendMessage(
             alt_text='指令表...',
             contents={
@@ -450,42 +475,7 @@ class StockInfo:
                             "layout": "vertical",
                             "margin": "xxl",
                             "spacing": "sm",
-                            "contents": [
-                                {
-                                    "type": "box",
-                                    "layout": "horizontal",
-                                    "contents": [
-                                        {
-                                            "type": "text",
-                                            "text": "新增股票:",
-                                            "size": "md",
-                                            "color": "#555555"
-                                        },
-                                        {
-                                            "type": "text",
-                                            "text": "/a 代號",
-                                            "align": "end"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "type": "box",
-                                    "layout": "horizontal",
-                                    "contents": [
-                                        {
-                                            "type": "text",
-                                            "text": "刪除股票:",
-                                            "size": "md",
-                                            "color": "#555555"
-                                        },
-                                        {
-                                            "type": "text",
-                                            "text": "/d 代號",
-                                            "align": "end"
-                                        }
-                                    ]
-                                }
-                            ]
+                            "contents": contents
                         }
                     ]
                 },
