@@ -63,3 +63,10 @@ class MyDataBase:
         except Exception as err:
             res = {'msg': err}
         return res
+
+
+if __name__ == '__main__':
+    res = MyDataBase().read('stock', 'Uc159e2de5a6e1a5f816b44e04e15527e')[
+        'data']['stocks']
+    for i in res.keys():
+        print(i, res[i])

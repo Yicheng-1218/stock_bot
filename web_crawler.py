@@ -311,7 +311,7 @@ class StockInfo:
 
     def get_list(self):
         try:
-            db_res = self.db.read('stock', self.uid)
+            db_res = self.db.read('stock', self.uid)['data']['stocks']
             contents = [
                 {
                     "type": "text",
@@ -327,8 +327,7 @@ class StockInfo:
                     "color": "#787878"
                 },
             ]
-            origin_map: dict = db_res['data']['stocks']
-            for key in origin_map.keys():
+            for key in db_res.keys():
                 item = {
                     "type": "box",
                     "layout": "vertical",
@@ -341,7 +340,7 @@ class StockInfo:
                             "contents": [
                                 {
                                     "type": "text",
-                                    "text": f"名稱: {origin_map[key]}",
+                                    "text": f"名稱: {db_res[key]}",
                                     "size": "md",
                                     "color": "#555555"
                                 },
@@ -373,7 +372,8 @@ class StockInfo:
                 }
             )
         except Exception as err:
-            reply = TextSendMessage('尚未建立清單')
+            print(err)
+            reply = TextSendMessage(f'{err}')
 
         return reply
 
