@@ -312,8 +312,9 @@ class StockInfo:
         try:
             db_read = self.db.read('stock', uid)
             print(db_read)
-            if len(db_read['data']['stocks']) == 0 or db_read['msg'] == 'document not exists':
+            if len(db_read['data']) == 0 or len(db_read['data']['stocks']) == 0 or db_read['msg'] == 'document not exists':
                 return TextSendMessage('尚未建立清單')
+
             contents = []
             stocks = db_read['data']['stocks']
             for key in stocks.keys():
