@@ -311,46 +311,26 @@ class StockInfo:
 
     def get_list(self):
         try:
-            db_res = self.db.read('stock', self.uid)['data']['stocks']
-            contents = [
-                {
-                    "type": "text",
-                    "text": "觀察清單",
-                    "weight": "bold",
-                    "size": "xxl",
-                    "margin": "md",
-                    "contents": []
-                },
-                {
-                    "type": "separator",
-                    "margin": "xs",
-                    "color": "#787878"
-                },
-            ]
-            for key in db_res.keys():
+            db_read = self.db.read('stock', self.uid)['data']['stocks']
+            if len(db_read['data']['stocks']) == 0 or db_read['msg'] == 'document not exists':
+                return TextSendMessage('尚未建立清單')
+            contents = []
+            for key in db_read.keys():
                 item = {
                     "type": "box",
-                    "layout": "vertical",
-                    "margin": "xxl",
-                    "spacing": "sm",
+                    "layout": "horizontal",
                     "contents": [
                         {
-                            "type": "box",
-                            "layout": "horizontal",
-                            "contents": [
-                                {
-                                    "type": "text",
-                                    "text": f"名稱: {db_res[key]}",
-                                    "size": "md",
-                                    "color": "#555555"
-                                },
-                                {
-                                    "type": "text",
-                                    "text": f"代號: {key}",
-                                    "size": "md",
-                                    "color": "#555555"
-                                }
-                            ]
+                            "type": "text",
+                            "text": f"名稱: {db_read[key]}",
+                            "size": "md",
+                            "color": "#555555"
+                        },
+                        {
+                            "type": "text",
+                            "text": f"代號: {key}",
+                            "size": "md",
+                            "color": "#555555"
                         }
                     ]
                 }
@@ -362,7 +342,27 @@ class StockInfo:
                     "body": {
                         "type": "box",
                         "layout": "vertical",
-                        "contents": contents
+                        "contents": [
+                            {
+                                "type": "text",
+                                "text": "觀察清單",
+                                "weight": "bold",
+                                "size": "xxl",
+                                "margin": "md",
+                            },
+                            {
+                                "type": "separator",
+                                "margin": "xs",
+                                "color": "#787878"
+                            },
+                            {
+                                "type": "box",
+                                "layout": "vertical",
+                                "margin": "xxl",
+                                "spacing": "sm",
+                                "contents": contents
+                            }
+                        ]
                     },
                     "styles": {
                         "footer": {
@@ -386,7 +386,7 @@ class StockInfo:
             search_term = 'td[align=center]'
             result = html(search_term).text().split()
             db_read = self.db.read('stock', self.uid)
-            if db_read['msg'] == 'document not exists':
+            if db_read['msg'] == 'document not exists' or len(db_read['data']['stocks']) == 0:
                 data = {'stocks':
                         {
                             sid: result[0].strip(sid)
@@ -498,3 +498,9 @@ class StockInfo:
                 }
             }
         )
+
+
+if __name__ == '__main__':
+    s = StockInfo()
+    s.uid = 'Uc159e2de5a6e1a5f816b44e04e15527e'
+    print(s.get_list())
