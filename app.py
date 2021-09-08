@@ -49,7 +49,7 @@ def home():
 # 訊息參照表
 msg_ref = {
     'command_list': lambda uid: StockInfo.get_commands(),
-    'get_list': lambda uid: MyStock.get_list(),
+    'get_list': lambda uid: MyStock.get_list(uid),
     'get_list_report': lambda uid: TextSendMessage('開發中')
 }
 
