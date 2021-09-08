@@ -7,9 +7,9 @@ from firebase import MyDataBase
 
 class StockInfo:
 
-    def __init__(self, uid) -> None:
+    def __init__(self) -> None:
         self.db = MyDataBase()
-        self.uid = uid
+        self.uid = ''
 
     def __request_code(self, sid):
         # sid 個股代號
@@ -325,9 +325,10 @@ class StockInfo:
                     "type": "separator",
                     "margin": "xs",
                     "color": "#787878"
-                }
+                },
             ]
-            for ele in db_res['data']['stocks']:
+            origin_map: dict = db_res['data']['stocks']
+            for key in origin_map.keys():
                 item = {
                     "type": "box",
                     "layout": "vertical",
@@ -340,14 +341,14 @@ class StockInfo:
                             "contents": [
                                 {
                                     "type": "text",
-                                    "text": f"名稱: {ele['name']}",
-                                    "size": "sm",
+                                    "text": f"名稱: {origin_map[key]}",
+                                    "size": "md",
                                     "color": "#555555"
                                 },
                                 {
                                     "type": "text",
-                                    "text": f"代號: {ele['code']}",
-                                    "size": "sm",
+                                    "text": f"代號: {key}",
+                                    "size": "md",
                                     "color": "#555555"
                                 }
                             ]
@@ -371,8 +372,8 @@ class StockInfo:
                     }
                 }
             )
-        except:
-            reply = TextSendMessage('尚未建立觀察清單')
+        except Exception as err:
+            reply = TextSendMessage('尚未建立清單')
 
         return reply
 
@@ -384,33 +385,36 @@ class StockInfo:
         if html != -1:
             search_term = 'td[align=center]'
             result = html(search_term).text().split()
-            data = {'stocks': [
-                {
-                    'name': result[0],
-                    'code': sid
-                }
-            ]
-            }
-            db_read = self.db.read('stock', self.uid)['data']['stocks']
-            if db_read == None or len(db_read) == 0:
+            db_read = self.db.read('stock', self.uid)
+            if db_read['msg'] == 'document not exists':
+                data = {'stocks':
+                        {
+                            sid: result[0].strip(sid)
+                        }
+                        }
                 db_create = self.db.create('stock', data, self.uid)
             else:
-                db_create = self.update_list(sid, db_read)
+                if sid in db_read['data']['stocks']:
+                    return TextSendMessage(f'代號已存在: {sid}')
+
+                new_data = db_read['data']['stocks']
+                new_data[sid] = result[0].strip(sid)
+                db_create = self.db.update(
+                    'stock', {'stocks': new_data}, self.uid)
             reply = TextSendMessage(db_create['msg'])
         else:
             reply = TextSendMessage(f'查無代號: {sid}')
         return reply
 
-    def update_list(self, sid, origin_data: list = None):
+    def pop_item(self, sid, update_data: dict = None):
         try:
-            if origin_data != None:
-                new_list = origin_data.remove(sid)
+            if update_data != None:
                 db_update = self.db.update(
-                    'stock', {'stocks': new_list}, self.uid)
+                    'stock', {'stocks': update_data}, self.uid)
             else:
-                db_read: list = self.db.read('stock', self.uid)[
+                db_read: dict = self.db.read('stock', self.uid)[
                     'data']['stocks']
-                new_list = db_read.remove(sid)
+                new_list = db_read.pop(sid)
                 db_update = self.db.update(
                     'stock', {'stocks': new_list}, self.uid)
                 reply = TextSendMessage(db_update['msg'])
@@ -425,6 +429,7 @@ class StockInfo:
             alt_text='指令表...',
             contents={
                 "type": "bubble",
+                "size": "micro",
                 "body": {
                     "type": "box",
                     "layout": "vertical",
@@ -433,7 +438,7 @@ class StockInfo:
                             "type": "text",
                             "text": "指令表",
                             "weight": "bold",
-                            "size": "xxl",
+                            "size": "xl",
                             "margin": "md",
                             "contents": []
                         },
@@ -456,13 +461,12 @@ class StockInfo:
                                             "type": "text",
                                             "text": "新增股票:",
                                             "size": "md",
-                                            "color": "#555555",
-                                            "flex": 0
+                                            "color": "#555555"
                                         },
                                         {
                                             "type": "text",
                                             "text": "/a 代號",
-                                            "align": "center"
+                                            "align": "end"
                                         }
                                     ]
                                 },
@@ -474,13 +478,12 @@ class StockInfo:
                                             "type": "text",
                                             "text": "刪除股票:",
                                             "size": "md",
-                                            "color": "#555555",
-                                            "flex": 0
+                                            "color": "#555555"
                                         },
                                         {
                                             "type": "text",
                                             "text": "/d 代號",
-                                            "align": "center"
+                                            "align": "end"
                                         }
                                     ]
                                 }

@@ -63,3 +63,7 @@ class MyDataBase:
         except Exception as err:
             res = {'msg': err}
         return res
+
+
+if __name__ == '__main__':
+    pass
